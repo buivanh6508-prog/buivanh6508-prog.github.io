@@ -1,0 +1,145 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Math Quest – Hành Trình Bách Khoa</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:#1a1c2c;color:#f4f4f4;font:22px/1.25 VT323,monospace;display:flex;justify-content:center}
+#app{width:100%;max-width:520px;padding:14px}
+h1{font:18px/1.6 'Press Start 2P',monospace;color:#ffcd75;text-align:center;text-shadow:3px 3px #b13e53;margin:10px 0}
+.c{text-align:center}
+.box{background:#262b44;padding:12px;margin:12px 0;box-shadow:0 0 0 4px #566c86,0 0 0 8px #1a1c2c}
+.btn{font:inherit;color:#f4f4f4;background:#3b5dc9;border:0;padding:8px 14px;cursor:pointer;box-shadow:inset -4px -4px #253a7a,inset 4px 4px #5f85f0}
+.btn:active{transform:translateY(2px)}.sm{font-size:18px;padding:4px 10px}
+.spr{width:88px;height:88px;image-rendering:pixelated}
+#ts{display:flex;justify-content:center;gap:6px;margin:14px 0}
+.lv{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0;padding:8px;background:#262b44;color:#f4f4f4;font:inherit;text-align:left;border:0;cursor:pointer;box-shadow:0 0 0 4px #566c86}
+.lv.lock{opacity:.4;cursor:default}.lv .spr{width:52px;height:52px}.tt{flex:1}.st{color:#ffcd75}
+.hud{display:flex;justify-content:space-between;gap:6px;font-size:20px}#hp{color:#ff5d6c;letter-spacing:2px}
+.stage{height:130px;background:linear-gradient(#29366f 0 62%,#38b764 62% 100%);display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px 8px;box-shadow:0 0 0 4px #566c86;margin-top:8px}
+.ebar{height:16px;background:#1a1c2c;border:3px solid #566c86;margin-top:8px}.ebar i{display:block;height:100%;width:100%;background:#b13e53;transition:width .3s steps(5)}
+#fg{width:100%;max-width:400px;display:block;margin:0 auto 8px;image-rendering:pixelated}
+#q{font-size:25px;text-align:center;margin:6px 0 10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt{font-size:26px;min-height:52px}
+.ir{display:flex;gap:8px}.ir input{flex:1;min-width:0;font:inherit;font-size:26px;background:#1a1c2c;color:#f4f4f4;border:3px solid #566c86;padding:6px}
+#fb{min-height:28px;text-align:center;margin-top:10px}.ok{color:#73eff7}.no{color:#ff8a8a}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;font-size:.9em;line-height:1.05}
+.fr i{font-style:normal;border-bottom:2px solid currentColor;padding:0 3px}.fr b{font-weight:normal}
+.cs{display:inline-flex;flex-direction:column;font-size:.6em;vertical-align:middle;line-height:.9;margin-left:2px}.cs sup,.cs sub{position:static;font-size:inherit;line-height:1}
+.ov{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:24px;z-index:9}.ov .box{max-width:400px;width:100%}
+.hit .spr{animation:sh .4s steps(4)}.atk .spr{animation:hp .4s steps(4)}
+@keyframes sh{25%{transform:translateX(-10px);filter:brightness(3)}75%{transform:translateX(10px);filter:brightness(3)}}
+@keyframes hp{50%{transform:translateX(40px)}}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[R(0,a.length-1)];
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){let j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>b?gcd(b,a%b):a,cb=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r)};
+const F=(a,b)=>b==1?''+a:`<span class=fr><i>${a}</i><b>${b}</b></span>`;
+const FR=(a,b)=>{let g=gcd(a,b);return F(a/g,b/g)};
+const Cn=(k,n)=>`C<span class=cs><sup>${k}</sup><sub>${n}</sub></span>`;
+const MC=(q,a,w,fig)=>{let o=[a];w.forEach(x=>{if(!o.includes(x)&&o.length<4)o.push(x)});return{q,fig,a,o:sh(o)}};
+const num=(q,a,fig,s=1)=>MC(q,''+a,sh([a+s,a-s,a+2*s,a-2*s,a+3*s,a*2,a+10*s,a-10*s].filter(x=>x!=a&&x>=0)).slice(0,3).map(String),fig);
+const inp=(q,a,fig)=>({q,fig,a:''+a,inp:1});
+/* ---------- sprites ---------- */
+const PAL={r:'#b13e53',s:'#ffcd75',b:'#1a1c2c',y:'#fcd34d',g:'#38b764',w:'#f4f4f4',p:'#7b3fa0',o:'#ef7d57',c:'#41a6f6',d:'#566c86',l:'#3b5dc9'};
+const SP={
+hero:["..rrrr..",".rrrrrr.",".ssssss.",".sbssbs.","..ssss..",".llllll.","s.llll.s","..d..d.."],
+slime:["........","..gggg..",".gggggg.","gwbggwbg","gggggggg","gggbbggg","gggggggg",".dddddd."],
+bat:["b......b","bb.bb.bb","bbbbbbbb","bbwbbwbb",".bbbbbb.","..bwwb..","...bb...","........"],
+ghost:["..wwww..",".wwwwww.","wwbwwbww","wwbwwbww","wwwwwwww","wwwoowww","wwwwwwww","w.ww.ww."],
+skull:[".wwwwww.","wwwwwwww","wbbwwbbw","wbbwwbbw","wwwbbwww",".wwwwww.",".wbwbwb.","..wwww.."],
+robot:["...yy...",".cccccc.","cbbccbbc","cccccccc","cwwwwwwc","cccccccc",".cc..cc.",".cc..cc."],
+demon:["p.pppp.p","pppppppp","prwppwrp","pppppppp","pwwwwwwp",".pppppp.","pp.pp.pp","p......p"],
+dragon:["r.rrrr.r","rrrrrrrr","ryyrryyr","rybrrbyr","rrrrrrrr","rwrwrwrr",".rrrrrr.","rr.rr.rr"]};
+function spr(k){let c=document.createElement('canvas');c.width=c.height=8;c.className='spr';let x=c.getContext('2d');SP[k].forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!='.'){x.fillStyle=PAL[ch];x.fillRect(i,j,1,1)}}));return c}
+/* ---------- figures (pixel canvas 200x100) ---------- */
+const BG='#262b44',LN='#ffcd75',FL='#3b5dc9',TX='#f4f4f4',RD='#ff5d6c';
+const px=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x|0,y|0,w,h)};
+function ln(c,x0,y0,x1,y1,col=LN,dash=0){x0|=0;y0|=0;x1|=0;y1|=0;c.fillStyle=col;let dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,e=dx+dy,i=0;for(;;){if(!dash||i++%4<2)c.fillRect(x0,y0,1,1);if(x0==x1&&y0==y1)break;let e2=2*e;if(e2>=dy){e+=dy;x0+=sx}if(e2<=dx){e+=dx;y0+=sy}}}
+const tx=(c,s,x,y,col=TX)=>{c.fillStyle=col;c.font='bold 10px monospace';c.fillText(s,x|0,y|0)};
+const mk=f=>c=>{px(c,0,0,200,100,BG);f(c)};
+const FIG={
+rect:(w,h)=>mk(c=>{let s=Math.min(110/w,52/h),W=w*s|0,H=h*s|0,x=(200-W)/2|0,y=((86-H)/2|0)+3;px(c,x,y,W,H,FL);[[x,y,x+W,y],[x+W,y,x+W,y+H],[x+W,y+H,x,y+H],[x,y+H,x,y]].forEach(p=>ln(c,...p));tx(c,w,x+W/2-4,y+H+12);tx(c,h,x+W+5,y+H/2+3)}),
+tri:(b,h)=>mk(c=>{let s=Math.min(120/b,60/h),W=b*s|0,H=h*s|0,x=(200-W)/2|0,y=10,cx=x+(W*.3|0);for(let i=0;i<=W;i++)ln(c,cx,y,x+i,y+H,FL);ln(c,x,y+H,x+W,y+H);ln(c,x,y+H,cx,y);ln(c,x+W,y+H,cx,y);ln(c,cx,y,cx,y+H,TX,1);tx(c,b,x+W/2-4,y+H+12);tx(c,h,cx+4,y+H/2+3)}),
+rt:(a,b)=>mk(c=>{let s=Math.min(120/b,64/a),W=b*s|0,H=a*s|0,x=(200-W)/2|0,y=8;for(let i=0;i<=W;i++)ln(c,x,y,x+i,y+H,FL);ln(c,x,y,x,y+H);ln(c,x,y+H,x+W,y+H);ln(c,x,y,x+W,y+H);ln(c,x+5,y+H-1,x+5,y+H-5,TX);ln(c,x,y+H-5,x+5,y+H-5,TX);tx(c,a,x-14,y+H/2+3);tx(c,b,x+W/2-4,y+H+12);tx(c,'?',x+W/2+6,y+H/2-3,RD)}),
+L:(a,b,cw,ch)=>mk(c=>{let s=Math.min(100/a,56/b),W=a*s|0,H=b*s|0,x=(200-W)/2|0,y=((88-H)/2|0)+5,CW=cw*s|0,CH=ch*s|0;px(c,x,y,W,H,FL);px(c,x+W-CW,y,CW,CH,BG);[[x,y,x+W-CW,y],[x+W-CW,y,x+W-CW,y+CH],[x+W-CW,y+CH,x+W,y+CH],[x+W,y+CH,x+W,y+H],[x+W,y+H,x,y+H],[x,y+H,x,y]].forEach(p=>ln(c,...p));tx(c,a,x+W/2-4,y+H+12);tx(c,b,x-14,y+H/2+3);tx(c,cw,x+W-CW/2-4,y-3);tx(c,ch,x+W+4,y+CH/2+3)}),
+box:(a,b,h)=>mk(c=>{let s=Math.min(80/(a+b*.5),50/(h+b*.5)),W=a*s|0,H=h*s|0,d=b*s*.5|0,x=((200-W-d)/2|0),y=d+10;px(c,x,y,W,H,FL);
+[[x,y,x+W,y],[x+W,y,x+W,y+H],[x+W,y+H,x,y+H],[x,y+H,x,y],[x+d,y-d,x+W+d,y-d],[x+W+d,y-d,x+W+d,y+H-d],[x,y,x+d,y-d],[x+W,y,x+W+d,y-d],[x+W,y+H,x+W+d,y+H-d]].forEach(p=>ln(c,...p));
+[[x+d,y-d,x+d,y+H-d],[x+d,y+H-d,x+W+d,y+H-d],[x,y+H,x+d,y+H-d]].forEach(p=>ln(c,...p,'#94b0c2',1));ln(c,x,y+H,x+W+d,y-d,RD,1);
+tx(c,a,x+W/2-4,y+H+12);tx(c,h,x-14,y+H/2+3);tx(c,b,x+W+d/2+4,y-d/2-2);tx(c,'?',x+W/2,y+H/2-2,RD)}),
+dots:()=>mk(c=>{[8,46,90,142].forEach((o,t)=>{let n=t+1;for(let r=0;r<n;r++)for(let k=0;k<=r;k++)px(c,o+(n-1-r)*3+k*6,16+r*7,4,4,LN);tx(c,'H'+n,o+6,92)})}),
+grid:(m)=>mk(c=>{m.forEach((r,i)=>r.forEach((v,j)=>{let x=46+j*36,y=14+i*24,s=''+v,col=v=='?'?RD:TX;px(c,x,y,36,1,'#566c86');px(c,x,y+23,36,1,'#566c86');px(c,x,y,1,24,'#566c86');px(c,x+35,y,1,24,'#566c86');tx(c,s,x+18-s.length*3,y+16,col)}))}),
+nest:()=>mk(c=>{let P=[[64,12],[136,12],[136,84],[64,84]];['#ffcd75','#73eff7','#ff5d6c'].forEach(col=>{for(let i=0;i<4;i++){let a=P[i],b=P[(i+1)%4];ln(c,a[0],a[1],b[0],b[1],col)}P=P.map((a,i)=>{let b=P[(i+1)%4];return[(a[0]+b[0])/2,(a[1]+b[1])/2]})});tx(c,'12',96,9);tx(c,'?',96,52,RD)})};
+/* ---------- level generators ---------- */
+const LV=[
+{n:'Đồng Cỏ Số Học',d:'Cộng, trừ, nhân, chia',e:'slime',gen(g){let a,b,c,d,e;
+ if(g==0){a=R(3,9);b=R(4,9);return num(`${a} + ${b} = ?`,a+b)}
+ if(g==1){a=R(6,9);b=R(6,9);return num(`${a} × ${b} = ?`,a*b)}
+ if(g==2){a=R(300,899);b=R(100,250);c=R(20,99);return num(`${a} − ${b} + ${c} = ?`,a-b+c,0,10)}
+ if(g==3){a=R(10,50);b=R(3,9);c=R(3,9);d=R(5,19);return num(`${a} + ${b} × ${c} − ${d} = ?`,a+b*c-d,0,2)}
+ e=R(2,9);d=R(5,20);a=R(5,30);b=R(5,30);c=R(3,9);return inp(`(${a} + ${b}) × ${c} − ${d*e} ÷ ${e} = ?`,(a+b)*c-d)}},
+{n:'Hang Dơi Phân Số',d:'Phân số & phần trăm',e:'bat',gen(g){
+ if(g==0){let p=pick([10,20,25,50]),n=pick([40,80,120,200]);return num(`${p}% của ${n} là bao nhiêu?`,p*n/100,0,5)}
+ if(g==1){let b=R(5,12),a=R(1,b>>1),c=R(1,b>>1);return MC(`${F(a,b)} + ${F(c,b)} = ?`,FR(a+c,b),[FR(a+c,2*b),FR(a*c,b),FR(a+c,b+1),FR(a+c+1,b)])}
+ if(g==2){let b=pick([2,3,4,5,6]),d=pick([3,4,5,7].filter(x=>x!=b)),a=R(1,b-1),c=R(1,2),n=a*d+c*b,m=b*d;return MC(`${F(a,b)} + ${F(c,d)} = ?`,FR(n,m),[FR(a+c,b+d),FR(a+c,m),FR(n+1,m),FR(n,m+b)])}
+ if(g==3){let P=pick([400,800]),x=pick([10,20,25]),y=pick([10,20,50]);return num(`Món hàng giá ${P} nghìn đồng được giảm ${x}%, sau đó tăng ${y}% so với giá đã giảm. Giá cuối cùng là bao nhiêu nghìn đồng?`,P*(100-x)*(100+y)/10000,0,10)}
+ let t=pick([[3,6,2],[4,12,3],[6,12,4],[10,15,6],[12,24,8]]);return inp(`Vòi A chảy một mình đầy bể trong ${t[0]} giờ, vòi B chảy một mình đầy bể trong ${t[1]} giờ. Mở cả hai vòi cùng lúc thì sau bao nhiêu giờ đầy bể?`,t[2])}},
+{n:'Lâu Đài Hình Học',d:'Chu vi, diện tích, thể tích (có hình)',e:'ghost',gen(g){
+ if(g==0){let w=R(4,12),h=R(2,w-1);return num('Chu vi hình chữ nhật (cm) là bao nhiêu?',2*(w+h),FIG.rect(w,h),2)}
+ if(g==1){let b=2*R(3,8),h=R(3,9);return num('Diện tích tam giác (cm²) là bao nhiêu?',b*h/2,FIG.tri(b,h),3)}
+ if(g==2){let a=R(8,14),b=R(7,12),c=R(3,a-3),d=R(2,b-3);return num('Tính diện tích hình chữ L (cm²) — đã bỏ đi góc nhỏ phía trên bên phải.',a*b-c*d,FIG.L(a,b,c,d),4)}
+ if(g==3){let t=pick([[3,4,5],[5,12,13],[6,8,10],[8,15,17],[9,12,15]]);return num('Tam giác vuông có hai cạnh góc vuông như hình. Độ dài cạnh huyền (cm) là?',t[2],FIG.rt(t[0],t[1]))}
+ let t=pick([[1,2,2,3],[2,3,6,7],[2,10,11,15],[4,4,7,9],[2,6,9,11]]);return inp('Hình hộp chữ nhật có ba kích thước như hình. Độ dài đường chéo (cm) là?',t[3],FIG.box(t[0],t[1],t[2]))}},
+{n:'Mê Cung Quy Luật',d:'Dãy số & quy luật hình',e:'skull',gen(g){
+ if(g==0){let a=R(1,9),d=R(2,6),t=[0,1,2,3].map(i=>a+i*d);return num(`Số tiếp theo của dãy: ${t.join(', ')}, ... là?`,a+4*d,0,d)}
+ if(g==1){let a=R(1,4),r=pick([2,3]),t=[0,1,2,3].map(i=>a*r**i);return num(`Số tiếp theo của dãy: ${t.join(', ')}, ... là?`,a*r**4,0,r)}
+ if(g==2)return num('Quan sát quy luật các hình chấm. Hình thứ 6 có bao nhiêu chấm?',21,FIG.dots(),3);
+ if(g==3){let s=R(1,5),e=R(1,4),d=R(1,3),t=[s];for(let n=0;n<5;n++)t.push(t[n]+e+n*d);return num(`Tìm số hạng tiếp theo của dãy: ${t.slice(0,5).join(', ')}, ...`,t[5],0,2)}
+ let f=pick([(a,b)=>a*b,(a,b)=>a*a+b,(a,b)=>(a+b)*b]),A=R(2,6),B=R(2,6),C=R(2,6),D=R(2,6),m=[[A,B,f(A,B)],[C,D,f(C,D)]],a=R(2,6),b=R(2,6);return inp('Mỗi hàng cùng theo một quy luật. Tìm số ở dấu ?',f(a,b),FIG.grid([...m,[a,b,'?']]))}},
+{n:'Tháp Đại Số',d:'Phương trình, hệ, Vieta',e:'robot',gen(g){
+ if(g==0){let a=R(5,30),x=R(3,40);return num(`Giải phương trình x + ${a} = ${a+x}. Tìm x.`,x,0,1)}
+ if(g==1){let x=R(2,9),a=R(2,6),b=R(1,15);return num(`Giải phương trình ${a}x + ${b} = ${a*x+b}. Tìm x.`,x)}
+ if(g==2){let a=R(2,5),b=R(15,40);return num(`Số nghiệm nguyên dương của bất phương trình ${a}x < ${b} là?`,Math.floor((b-1)/a),0,1)}
+ if(g==3){let x=R(4,12),y=R(1,x-1);return inp(`Cho x + y = ${x+y} và x − y = ${x-y}. Tính x·y.`,x*y)}
+ let r1=R(1,6),r2=R(2,7);return inp(`Phương trình x<sup>2</sup> − ${r1+r2}x + ${r1*r2} = 0 có hai nghiệm x<sub>1</sub>, x<sub>2</sub>. Tính x<sub>1</sub><sup>2</sup> + x<sub>2</sub><sup>2</sup>.`,r1*r1+r2*r2)}},
+{n:'Hầm Tổ Hợp',d:'Đếm, tổ hợp, xác suất',e:'demon',gen(g){
+ if(g==0){let a=R(3,6),b=R(3,6);return num(`Có ${a} cái áo và ${b} cái quần khác nhau. Có bao nhiêu cách chọn một bộ quần áo?`,a*b,0,2)}
+ if(g==1){let n=R(4,6),f=[1,1,2,6,24,120,720];return num(`Xếp ${n} bạn thành một hàng dọc. Có bao nhiêu cách xếp?`,f[n],0,6)}
+ if(g==2){let k=pick([2,3]),n=k==2?R(6,12):R(5,8);return num(`Tính ${Cn(k,n)} (số cách chọn ${k} bạn từ ${n} bạn).`,cb(n,k),0,2)}
+ if(g==3){let t=pick([[3,3],[4,2],[5,3],[4,4]]),a=t[0],b=t[1],n=cb(a,2)+cb(b,2),m=cb(a+b,2);return MC(`Hộp có ${a} bi đỏ và ${b} bi xanh. Lấy ngẫu nhiên 2 bi. Xác suất để hai bi cùng màu là?`,FR(n,m),[FR(a*b,m),FR(m-n,m),FR(n+1,m),FR(n,m+1)])}
+ let n=R(5,6),f=[1,1,2,6,24,120];return inp(`Xếp ${n} bạn thành một hàng ngang sao cho hai bạn An và Bình luôn đứng cạnh nhau. Có bao nhiêu cách xếp?`,2*f[n-1])}},
+{n:'Rồng Bách Khoa',d:'BOSS — vận dụng cao',e:'dragon'}];
+const BS=[
+()=>pick([num('Số nghiệm thực của phương trình x<sup>4</sup> − 5x<sup>2</sup> + 4 = 0 là?',4,0,1),inp('Có bao nhiêu số nguyên x thỏa mãn |x − 2| ≤ 5?',11)]),
+()=>pick([inp('Giá trị nhỏ nhất của x<sup>2</sup> − 6x + 11 là?',2),inp('Hàm số y = x<sup>3</sup> − 3x có giá trị cực đại bằng?',2)]),
+()=>pick([inp('Nối trung điểm các cạnh hình vuông cạnh 12 được hình vuông thứ hai; lặp lại để được hình vuông thứ ba. Diện tích hình vuông thứ ba là?',36,FIG.nest()),inp('Số ước nguyên dương của 360 là?',24)]),
+()=>pick([inp('log<sub>2</sub>32 + log<sub>3</sub>27 − log<sub>4</sub>16 = ?',6),inp('Có bao nhiêu số tự nhiên có 3 chữ số đôi một khác nhau?',648)]),
+()=>pick([inp('Chữ số tận cùng của 7<sup>2025</sup> là?',7),inp('Tổng tất cả các số tự nhiên từ 1 đến 100 chia hết cho 3 là?',1683)]),
+()=>pick([inp('Tính tích phân của (3x<sup>2</sup> + 1) với cận từ 0 đến 2.',10),inp('Cho a + b = 5 và ab = 3. Tính a<sup>3</sup> + b<sup>3</sup>.',80)])];
+/* ---------- game flow ---------- */
+let ST={s:[0,0,0,0,0,0,0]},G,Q;try{let t=JSON.parse(localStorage.getItem('mq'));if(t&&t.s)ST=t}catch(e){}
+const save=()=>{try{localStorage.setItem('mq',JSON.stringify(ST))}catch(e){}};
+const app=$('#app');
+function title(){app.innerHTML='<h1>MATH<br>QUEST</h1><div id=ts></div><div class="box c">Hành trình Bách Khoa: đánh bại 7 quái vật bằng trí tuệ toán học!<br>Mỗi màn một dạng bài, độ khó tăng dần từ cơ bản đến vận dụng cao.</div><p class=c><button class=btn onclick="map()">▶ BẮT ĐẦU</button></p>';$('#ts').append(spr('hero'),spr('slime'),spr('skull'),spr('dragon'))}
+function map(){app.innerHTML='<h1>BẢN ĐỒ</h1><div id=ml></div>';LV.forEach((l,i)=>{let ok=i==0||ST.s[i-1]>0,b=document.createElement('button');b.className='lv'+(ok?'':' lock');b.disabled=!ok;b.innerHTML=`<span class=ic></span><span class=tt><b>${i+1}. ${l.n}</b><br>${l.d}</span><span class=st>${ok?'★'.repeat(ST.s[i])+'☆'.repeat(3-ST.s[i]):'KHÓA'}</span>`;b.querySelector('.ic').append(spr(l.e));b.onclick=()=>play(i);$('#ml').append(b)})}
+function play(i){G={i,hp:3,k:0,max:i==6?6:5,sc:0,lock:0};app.innerHTML=`<div class=hud><span id=hp></span><span>${LV[i].n}</span><span>ĐIỂM <b id=sc>0</b></span></div><div class=stage><div id=hero></div><div id=en></div></div><div class=ebar><i id=ef></i></div><div class=box><canvas id=fg width=200 height=100></canvas><div id=q></div><div id=an></div><div id=fb></div></div><p class=c><button class="btn sm" onclick="map()">← Bản đồ</button></p>`;$('#hero').append(spr('hero'));$('#en').append(spr(LV[i].e));nq()}
+function nq(){G.lock=0;$('#hp').textContent='♥'.repeat(G.hp)+'♡'.repeat(3-G.hp);$('#ef').style.width=100*(G.max-G.k)/G.max+'%';
+ Q=G.i==6?BS[G.k]():LV[G.i].gen(Math.min(4,G.k+Math.floor(G.i/3)));
+ let f=$('#fg');f.style.display=Q.fig?'block':'none';if(Q.fig)Q.fig(f.getContext('2d'));
+ $('#q').innerHTML=Q.q;$('#fb').innerHTML='';
+ $('#an').innerHTML=Q.inp?'<div class=ir><input id=in inputmode=decimal autocomplete=off placeholder="Nhập đáp án"><button class=btn id=ok>OK</button></div>':'<div class=opts>'+Q.o.map(o=>`<button class="btn opt" data-v="${o.replace(/"/g,'&quot;')}">${o}</button>`).join('')+'</div>';
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>ans(b.dataset.v));
+ let i=$('#in');if(i){$('#ok').onclick=()=>ans(i.value);i.onkeydown=e=>{if(e.key=='Enter')ans(i.value)}}}
+function ans(v){if(G.lock)return;v=(''+v).trim();if(!v)return;G.lock=1;
+ let ok=Q.inp?parseFloat(v.replace(',','.'))==parseFloat(Q.a):v==Q.a,fb=$('#fb'),en=$('#en'),hr=$('#hero');
+ if(ok){G.k++;G.sc+=10*(Math.min(G.k,5)+G.i);$('#sc').textContent=G.sc;fb.className='ok';fb.textContent='✔ Chính xác! Quái vật bị đánh trúng!';en.classList.add('hit');hr.classList.add('atk');$('#ef').style.width=100*(G.max-G.k)/G.max+'%'}
+ else{G.hp--;$('#hp').textContent='♥'.repeat(G.hp)+'♡'.repeat(3-G.hp);fb.className='no';fb.innerHTML='✖ Sai rồi! Đáp án đúng: '+Q.a;hr.classList.add('hit')}
+ setTimeout(()=>{en.classList.remove('hit');hr.classList.remove('atk','hit')},450);
+ setTimeout(()=>G.k>=G.max?end(1):G.hp<=0?end(0):nq(),ok?900:1900)}
+function end(w){let st=G.hp,i=G.i;if(w&&st>ST.s[i]){ST.s[i]=st;save()}
+ let o=document.createElement('div');o.className='ov';
+ o.innerHTML=w?`<div class=box><h1>${i==6?'HUYỀN THOẠI!':'CHIẾN THẮNG!'}</h1><p class=c>${'★'.repeat(st)}${'☆'.repeat(3-st)}<br>Điểm: ${G.sc}</p><p class=c>${i<6?`<button class=btn onclick="play(${i+1})">Màn tiếp ▶</button> `:''}<button class=btn onclick="map()">Bản đồ</button></p></div>`:`<div class=box><h1>THUA RỒI!</h1><p class=c>Hết tim. Quái vật vẫn còn đó...</p><p class=c><button class=btn onclick="play(${i})">Thử lại</button> <button class=btn onclick="map()">Bản đồ</button></p></div>`;app.append(o)}
+title();
+</script></body></html>
